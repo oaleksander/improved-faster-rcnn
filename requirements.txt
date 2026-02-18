@@ -1,0 +1,11 @@
+numpy
+six
+torch
+torchvision
+tqdm
+opencv-python
+scikit-image
+pascal-voc-writer
+Pillow
+visdom
+torchnet
