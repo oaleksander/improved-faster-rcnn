@@ -15,7 +15,7 @@ class Config:
 
     # optimizer params
     # 0.0005 in origin paper but 0.0001 in tf-faster-rcnn
-    weight_decay = 0.0005
+    weight_decay = 0.00025 
     lr = 1e-3
     lr_decay = 0.1
 
@@ -25,7 +25,7 @@ class Config:
     deformable = True       # use deformable conv + deformable roi pooling
 
     # training params
-    nms_thresh = 0.3        # iou threshold in nms
+    nms_thresh = 0.5        # iou threshold in nms
     score_thresh = 0.05     # score threshold in nms
     rpn_sigma = 3.          # rpn sigma for l1_smooth_loss
     roi_sigma = 1.          # roi sigma for l1_smooth_loss
