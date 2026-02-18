@@ -183,4 +183,4 @@ def train(**kwargs):
 
 
 if __name__ == '__main__':
-    train()
+    train(**dict(arg.split('=') for arg in sys.argv[1:]))
