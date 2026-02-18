@@ -45,7 +45,9 @@ class Config:
         for key, value in kwargs.items():
             if key not in params:
                 raise ValueError('UnKnown Option: "--%s"' % key)
-            setattr(self, key, value)
+            attrtype = type(getattr(self, key))
+            print(attrtype(value))
+            setattr(self, key, attrtype(value))
 
         print('=================== User config ===============')
         pprint(params)

@@ -131,4 +131,4 @@ def test(**kwargs):
 
     
 if __name__ == '__main__':
-    test()
+    test(**dict(arg.split('=') for arg in sys.argv[1:]))
