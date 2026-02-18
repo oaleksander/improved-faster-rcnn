@@ -1,0 +1,3 @@
+[submodule "datasets/neu-det"]
+	path = datasets/neu-det
+	url = https://github.com/ljvblfz/neu-det-coco.git

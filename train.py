@@ -78,10 +78,7 @@ def train(**kwargs):
     # parse model parameters from config 
     opt.f_parse_args(kwargs)
 
-    if opt.database == 'voc':
-        print('load voc data')
-    elif opt.database == 'kitti':
-        print('load kitti data')
+    print('load neu-det data')
     # load training dataset 
     train_data = Dataset(opt,mode='train')
     train_dataloader = DataLoader(train_data, 
@@ -95,34 +92,19 @@ def train(**kwargs):
                                  batch_size=1,
                                  shuffle=False, 
                                  num_workers=opt.test_num_workers)
-    
-    # model construction
-    if opt.database == 'voc': 
-        if opt.apply_fpn:
-            if opt.deformable:
-                print('load Deformable FPN Faster RCNN Model')
-            else:
-                print('load FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=20).to(device)
+
+    if opt.apply_fpn:
+        if opt.deformable:
+            print('load Deformable FPN Faster RCNN Model')
         else:
-            if opt.deformable:
-                print('load Deformable Faster RCNN Model')
-            else:
-                print('load Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=20).to(device) 
-    elif opt.database == 'kitti':
-        if opt.apply_fpn:
-            if opt.deformable:
-                print('load Deformable FPN Faster RCNN Model')
-            else:
-                print('load FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=3).to(device)
+            print('load FPN Faster RCNN Model')
+        net = FPNFasterRCNNVGG16(n_fg_class=6).to(device)
+    else:
+        if opt.deformable:
+            print('load Deformable Faster RCNN Model')
         else:
-            if opt.deformable:
-                print('load Deformable Faster RCNN Model')
-            else:
-                print('load Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=3).to(device)  # 3 classes: Car, Pedestrian, Cyclist
+            print('load Faster RCNN Model')
+        net = FasterRCNNVGG16(n_fg_class=6).to(device)  # 3 classes: Car, Pedestrian, Cyclist
 
     print('Load SDG optimizer')
     # optimizer construction

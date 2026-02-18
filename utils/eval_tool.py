@@ -10,6 +10,14 @@ from tqdm import tqdm
 from model.utils.bbox_tools import bbox_iou
 from utils import array_tool as at
 
+label_names = (
+    'crazing        ',
+    'rolled-in_scale',
+    'inclusion      ',
+    'patches        ',
+    'scratches      ',
+    'pitted_surface ')
+
 def run_test(net, test_loader):
     # Evaluation for VOC dataset
     pred_bboxes, pred_labels, pred_scores = [], [], []
@@ -33,7 +41,7 @@ def voc_ap(net, test_loader):
     # Evaluation for VOC dataset
 
     # initialize evaluation metrics
-    map_result = {'mAP': 0, 'mAP_0.5': 0, 'mAP_0.75': 0}
+    map_result = {'mAP': 0, 'mAP_0.5': 0, 'mAP_0.75': 0, 'precision': [], 'recall': [], 'map_by_class': []}
     iou_threshes = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 
     # run test on test dataset
@@ -48,15 +56,26 @@ def voc_ap(net, test_loader):
         map_result['mAP'] += result['map']
         # save map for iou 0.5 & 0.75
         if iou_thresh == 0.5:
+            map_result['map_by_class'] = result['ap']
+            map_result['precision'] = result['precision']
+            map_result['recall'] = result['recall']
             map_result['mAP_0.5'] = result['map']
         elif iou_thresh == 0.75:
             map_result['mAP_0.75'] = result['map']
     
     map_result['mAP'] /= 10
 
-    # print results
-    print('Result: mAP=={:.2f} | mAP@0.5== {:.2f} | mAP@0.75=={:.2f}'.format(map_result['mAP']*100, map_result['mAP_0.5']*100, map_result['mAP_0.75']*100))
+    avg_precision = np.mean(map_result['precision'])
+    avg_recall = np.mean(map_result['recall'])
+    avg_f1 = 2 * avg_precision * avg_recall / (avg_precision + avg_recall)
 
+    # print results
+    print('Result: mAP@0.5-0.95=={:.2f} | mAP@0.5== {:.2f} | mAP@0.75=={:.2f}'.format(map_result['mAP']*100, map_result['mAP_0.5']*100, map_result['mAP_0.75']*100))
+    print('precision: {:.2f} | recall: {:.2f} | F1: {:.2f}'.format(avg_precision, avg_recall, avg_f1))
+    print('by class:')
+    for i in range(len(label_names)):
+        print(f'{label_names[i]}: ' + 'mAP@0.5: {:.2f} | precision: {:.2f} | recall: {:.2f}'
+              .format(map_result['map_by_class'][i], map_result['precision'][i], map_result['recall'][i]))
 
     return map_result['mAP']
 
@@ -75,7 +94,10 @@ def eval_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_dif
 
     ap = calc_detection_voc_ap(precision, recall, use_07_metric=use_07_metric)
 
-    return {'ap': ap, 'map': np.nanmean(ap)}
+    return {'ap': ap, 'map': np.nanmean(ap),
+            'precision': [np.mean(precision[k]) for k in range(len(precision))],
+            'recall': [np.mean(recall[k]) for k in range(len(recall))]
+            }
 
 
 def voc_prec_rec(

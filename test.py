@@ -11,8 +11,7 @@ from utils.config import opt
 #dataset
 from torch.utils.data import DataLoader
 from data.dataset import Dataset
-from data.voc_dataset import VOC_BBOX_LABEL_NAMES
-from data.kitti_dataset import KITTI_BBOX_LABEL_NAMES
+from data.neu_det_dataset import NEU_DET_LABEL_NAMES
 from data.util import KITTI_COLOR_LIST, VOC_COLOR_LIST
 
 # model 
@@ -48,20 +47,18 @@ def test(**kwargs):
 
 
     # model construction
-    if opt.database == 'voc': 
-        if opt.apply_fpn:
-            print('load pre-trained FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=20).to(device)
+    if opt.apply_fpn:
+        if opt.deformable:
+            print('load Deformable FPN Faster RCNN Model')
         else:
-            print('load pre-trained Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=20).to(device) 
-    elif opt.database == 'kitti':
-        if opt.apply_fpn:
-            print('load pre-trained FPN Faster RCNN Model')
-            net = FPNFasterRCNNVGG16(n_fg_class=3).to(device)
+            print('load FPN Faster RCNN Model')
+        net = FPNFasterRCNNVGG16(n_fg_class=6).to(device)
+    else:
+        if opt.deformable:
+            print('load Deformable Faster RCNN Model')
         else:
-            print('load pre-trained Faster RCNN Model')
-            net = FasterRCNNVGG16(n_fg_class=3).to(device)
+            print('load Faster RCNN Model')
+        net = FasterRCNNVGG16(n_fg_class=6).to(device)
     # load pretrained weight
     if opt.deformable:
         if opt.apply_fpn:
