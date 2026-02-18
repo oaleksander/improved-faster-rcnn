@@ -35,7 +35,6 @@ class Config:
 
     # testing params
     n_visual_imgs = 10   # number of images to visualize
-    visualize = False
     save_dir = './exp'
 
     def f_parse_args(self, kwargs):
