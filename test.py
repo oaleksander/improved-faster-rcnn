@@ -23,7 +23,23 @@ from utils.eval_tool import voc_ap
 import numpy as np
 import cv2
 
+
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
+    import torch
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+
 def test(**kwargs):
+    # deterministic
+    seed_everything(42)
 
     # set up cuda
     device = torch.device('cuda:0' if  torch.cuda.is_available() else 'cpu')
