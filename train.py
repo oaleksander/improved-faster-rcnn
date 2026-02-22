@@ -17,6 +17,7 @@ from data.dataset import Dataset
 from model import FasterRCNNVGG16, FPNFasterRCNNVGG16
 from torchnet.meter import AverageValueMeter
 from model.frcnn_bottleneck import Losses
+import matplotlib.pyplot as plt
 
 # utils
 from utils import array_tool as at
@@ -127,28 +128,33 @@ def train(**kwargs):
 
     # fitting 
     meters = {k: AverageValueMeter() for k in Losses._fields}
+    test_meters = {k: AverageValueMeter() for k in Losses._fields}
     best_mAP = 0
     best_path = None
     lr = opt.lr
+    train_losses = []
+    test_losses = []
+    test_maps = []
 
-    print('Start training...')
+    print("Start")
     for epoch in range(1, opt.epoch + 1):
         # switch to train mode
         net.train()
-        print(f'epoch #{epoch}')
+        print(f'Epoch #{epoch}')
         # reset meters
         reset_meters(meters)
         # train batch
+        print('Train')
         for img, bboxes, labels, scale in tqdm(train_dataloader):
             # prepare data
             scale = at.scalar(scale)
             img, bboxes, labels = img.to(device).float(), bboxes.to(device), labels.to(device)
             # forward + backward
             optimizer.zero_grad()
-            losses = net.forward(img,bboxes, labels, scale)
-            losses.total_loss.backward()
+            loss = net.forward(img,bboxes, labels, scale)
+            loss.total_loss.backward()
             optimizer.step()
-            update_meters(meters, losses)
+            update_meters(meters, loss)
         
         # print loss
         loss_metadata = get_meter_data(meters)
@@ -157,6 +163,7 @@ def train(**kwargs):
         roi_loc_loss = loss_metadata['roi_loc_loss']
         roi_cls_loss = loss_metadata['roi_cls_loss']
         total_loss = loss_metadata['total_loss']
+        train_losses.append(total_loss)
         print('lr=={} | rpn_loc_loss=={:.4f} | rpn_cls_loss=={:.4f} | roi_loc_loss=={:.4f} | roi_cls_loss=={:.4f} | total_loss=={:.4f}'.format(lr, 
                                                                                                                                                rpn_loc_loss, 
                                                                                                                                                rpn_cls_loss, 
@@ -164,10 +171,26 @@ def train(**kwargs):
                                                                                                                                                roi_cls_loss,
                                                                                                                                                total_loss))
 
+        # reset meters
+        reset_meters(test_meters)
+        print('Test')
+        with torch.no_grad():
+            for img, bboxes, labels, scale, ori_size, difficult in tqdm(test_dataloader):
+                scale = at.scalar(scale)
+                img, bboxes, labels = img.to(device).float(), bboxes.to(device), labels.to(device)
+                test_loss = net.forward(img, bboxes, labels, scale, ori_size)
+                update_meters(test_meters, test_loss)
+        test_loss_metadata = get_meter_data(test_meters)
+        total_test_loss = test_loss_metadata['total_loss']
+        print('total_loss=={:.4f}'.format(total_test_loss))
+        test_losses.append(total_test_loss)
+
         # evaluate
         net.eval()
         
         mAP = voc_ap(net, test_dataloader)
+
+        test_maps.append(mAP)
 
         # save model (if best model)
         if mAP > best_mAP:
@@ -193,6 +216,23 @@ def train(**kwargs):
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     torch.save(net.state_dict(), PATH)
+
+    plt_epochs = np.linspace(1, opt.epoch, opt.epoch)
+    plt.figure()
+    plt.plot(plt_epochs, train_losses, label="Train loss")
+    plt.plot(plt_epochs, test_losses, label="Test loss")
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.title(model_name)
+    plt.savefig(f'{opt.save_dir}/{opt.database}/{model_name}_losses.png')
+
+    plt.figure()
+    plt.plot(plt_epochs, test_maps)
+    plt.xlabel('Epoch')
+    plt.ylabel('Test mAP@0.5')
+    plt.title(model_name)
+    plt.savefig(f'{opt.save_dir}/{opt.database}/{model_name}_maps.png')
 
     #log.close()
 

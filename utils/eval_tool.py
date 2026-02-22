@@ -77,7 +77,7 @@ def voc_ap(net, test_loader):
         print(f'{label_names[i]}: ' + 'mAP@0.5: {:.2f} | precision: {:.2f} | recall: {:.2f}'
               .format(map_result['map_by_class'][i], map_result['precision'][i], map_result['recall'][i]))
 
-    return map_result['mAP']
+    return map_result['mAP_0.5']
 
 
 def eval_voc(pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels, gt_difficults=None,
