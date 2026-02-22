@@ -10,8 +10,8 @@ class Config:
     data_dir = 'datasets/neu-det/NEU-DET/'
     min_size = 200  # image resize
     max_size = 200 # image resize
-    train_num_workers = 8
-    test_num_workers = 8
+    train_num_workers = 2
+    test_num_workers = 2
 
     # optimizer params
     # 0.0005 in origin paper but 0.0001 in tf-faster-rcnn
