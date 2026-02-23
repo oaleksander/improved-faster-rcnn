@@ -169,13 +169,14 @@ def train(**kwargs):
         roi_loc_loss = loss_metadata['roi_loc_loss']
         roi_cls_loss = loss_metadata['roi_cls_loss']
         total_loss = loss_metadata['total_loss']
-        train_losses.append(total_loss)
-        print('lr=={} | rpn_loc_loss=={:.4f} | rpn_cls_loss=={:.4f} | roi_loc_loss=={:.4f} | roi_cls_loss=={:.4f} | total_loss=={:.4f}'.format(lr, 
+        output_loss = loss_metadata['output_loss']
+        train_losses.append(output_loss)
+        print('lr=={} | rpn_loc_loss=={:.4f} | rpn_cls_loss=={:.4f} | roi_loc_loss=={:.4f} | roi_cls_loss=={:.4f} | total_loss=={:.4f} | output_loss=={:.4f}'.format(lr,
                                                                                                                                                rpn_loc_loss, 
                                                                                                                                                rpn_cls_loss, 
                                                                                                                                                roi_loc_loss, 
                                                                                                                                                roi_cls_loss,
-                                                                                                                                               total_loss))
+                                                                                                                                               total_loss, output_loss))
 
         # evaluate
         net.eval()
@@ -200,8 +201,8 @@ def train(**kwargs):
                 test_loss = net.forward(img, bboxes, labels, scale, ori_size)
                 update_meters(test_meters, test_loss)
         test_loss_metadata = get_meter_data(test_meters)
-        total_test_loss = test_loss_metadata['total_loss']
-        print('total_loss=={:.4f}'.format(total_test_loss))
+        total_test_loss = test_loss_metadata['output_loss']
+        print('output_loss=={:.4f}'.format(total_test_loss))
         test_losses.append(total_test_loss)
 
         net.eval()
