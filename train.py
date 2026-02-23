@@ -171,6 +171,19 @@ def train(**kwargs):
                                                                                                                                                roi_cls_loss,
                                                                                                                                                total_loss))
 
+        # evaluate
+        net.eval()
+        
+        mAP = voc_ap(net, test_dataloader)
+
+        test_maps.append(mAP)
+
+        # save model (if best model)
+        if mAP > best_mAP:
+            best_mAP = mAP
+            best_path = save_model(net, opt.model,opt.database, epoch)
+
+        net.train()
         # reset meters
         reset_meters(test_meters)
         print('Test')
@@ -185,17 +198,7 @@ def train(**kwargs):
         print('total_loss=={:.4f}'.format(total_test_loss))
         test_losses.append(total_test_loss)
 
-        # evaluate
         net.eval()
-        
-        mAP = voc_ap(net, test_dataloader)
-
-        test_maps.append(mAP)
-
-        # save model (if best model)
-        if mAP > best_mAP:
-            best_mAP = mAP
-            best_path = save_model(net, opt.model,opt.database, epoch)
         
         # learning rate decay
         if epoch == opt.epoch_decay:
