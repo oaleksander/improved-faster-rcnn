@@ -168,7 +168,7 @@ class FasterRCNNBottleneck(nn.Module):
             roi_cls_loss = F.cross_entropy(roi_score, gt_roi_label.cuda())
 
             losses = [rpn_loc_loss, rpn_cls_loss, roi_loc_loss, roi_cls_loss]
-            losses = losses + [sum(losses)]
+            losses = losses + [roi_loc_loss + roi_cls_loss]
 
             return Losses(*losses)
         else:   # test
