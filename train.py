@@ -68,7 +68,13 @@ def build_optimizer(net):
             else:
                 params += [{'params': [value], 'lr': lr, 'weight_decay': opt.weight_decay}]
     
-    return torch.optim.SGD(params, momentum=0.9)
+    return torch.optim.Adam(
+        net.parameters(),
+        lr=1e-4,                # Learning rate – typical range 1e-4 to 1e-5
+        betas=(0.9, 0.999),     # Default momentum parameters
+        eps=1e-8,               # Default epsilon for numerical stability
+        weight_decay=1e-4,      # Weight decay (L2 regularization) – often 1e-4
+        amsgrad=False)           # Usually False)
 
 def seed_everything(seed: int):
     import random, os
